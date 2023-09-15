@@ -39,6 +39,7 @@ void openSwingIn()
     digitalWrite(pul, LOW);
     delayMicroseconds(speedStepper);
   }
+  
   while (digitalRead(sensor2) == 1)
   {
     if (digitalRead(sensor2) == 0)
@@ -51,6 +52,7 @@ void openSwingIn()
         delayMicroseconds(speedStepper);
         digitalWrite(pul, LOW);
         delayMicroseconds(speedStepper);
+        
       }
       digitalWrite(ena,HIGH);
       delay(100);
@@ -68,6 +70,7 @@ void openSwingOut()
     delayMicroseconds(speedStepper);
     digitalWrite(pul, LOW);
     delayMicroseconds(speedStepper);
+    
   }
   while (digitalRead(sensor1) == 1)
   {
@@ -81,6 +84,7 @@ void openSwingOut()
         delayMicroseconds(speedStepper);
         digitalWrite(pul, LOW);
         delayMicroseconds(speedStepper);
+        
       }
       digitalWrite(ena,HIGH);
       delay(100);
@@ -102,8 +106,7 @@ void setup() {
 
 void loop()
 {
-
-  if (digitalRead(sensor1) == 1)
+  if (digitalRead(sensor1) == 0)
   {
     if (Serial.available() > 0)
     {
@@ -111,6 +114,7 @@ void loop()
       dataIn = Serial.readString();
       if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n")
       {
+        Serial.println("masuk");
         openSwingIn();
       }
     }
@@ -123,6 +127,7 @@ void loop()
       dataIn = Serial.readString();
       if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n")
       {
+        Serial.println("oke");
         openSwingOut();
       }
     }
