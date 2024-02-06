@@ -4,6 +4,8 @@
 #define pul 9       // Pin pulse di TB6600
 #define sensor1 A0  // Sensor IR IN
 #define sensor2 A1  // Sensor IR EXIT
+#define pinLed1 3
+#define pinLed2 4
 
 //============ data setup======================
 
@@ -38,6 +40,7 @@ void steadyFlip()  // fungsi untuk steady kan flip untuk posisi closed
 
 void openSwingIn()  // fungsi untuk stepper untuk proses memnula gate
 {
+  
   digitalWrite(ena, LOW);              //Aktifator ENA
   digitalWrite(dir, HIGH);             // mengatur direction untuk open set di HIGH
   for (int i = 0; i <= stepOpen; i++)  //perulangan untuk per step buka (open proses)
@@ -135,7 +138,9 @@ void setup() {
 }
 
 void loop() {
-
+  
+  digitalWrite(pinLed1,HIGH);
+  digitalWrite(pinLed2,LOW);
   unsigned long currentMillis = millis();        //mendapatkan waktu saat ini
   if (currentMillis - prevMillis >= interval) {  //jika interval waktu sudah terlewati
     prevMillis = currentMillis;                  //memperbarui waktu sebelumnya
@@ -151,6 +156,8 @@ void loop() {
           dataIn = Serial.readString();
           if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n") 
           {
+            digitalWrite(pinLed1,LOW);
+            digitalWrite(pinLed2,HIGH);
             // Serial.println("masuk");
             openSwingIn();  // proses open arah Enter
           }
@@ -169,6 +176,8 @@ void loop() {
           dataIn = Serial.readString();
           if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n") 
           {
+            digitalWrite(pinLed1,LOW);
+            digitalWrite(pinLed2,HIGH);
             openSwingOut();  // proses open arah exit
           }
         }
