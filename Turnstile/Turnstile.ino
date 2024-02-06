@@ -11,8 +11,8 @@ int flagIn = 0;
 String dataIn = "";
 int flagExit = 0;
 
-const int stepOpen = 200;
-const int stepClose = 200;
+const int stepOpen = 300; //step untuk stepper motor untuk membuka gate 
+const int stepClose = 300; //step untuk Stepper motor untuk menutup kembali
 
 unsigned long lastDebounceTime = 0;  //variabel untuk debounce
 unsigned long debounceDelay = 50;    //waktu debounce dalam milidetik
@@ -42,24 +42,30 @@ void openSwingIn()  // fungsi untuk stepper untuk proses memnula gate
   digitalWrite(dir, HIGH);             // mengatur direction untuk open set di HIGH
   for (int i = 0; i <= stepOpen; i++)  //perulangan untuk per step buka (open proses)
   {
+    Serial.println("step open :" + String (i));
     digitalWrite(pul, HIGH);
     delayMicroseconds(speedStepper);
     digitalWrite(pul, LOW);
     delayMicroseconds(speedStepper);
+    delay(10);
   }
   Serial.println("opened");
   delay(5);
   while (digitalRead(sensor2) == HIGH)  // perulangan dan check untuk mode open orang masuk lalu menutup pintu
   {
     delay(5);
-    if (digitalRead(sensor2) == LOW) {
+    if (digitalRead(sensor2) == LOW) 
+    {
       digitalWrite(ena, LOW);
       digitalWrite(dir, LOW);
-      for (int i = 0; i <= stepClose; i++) {
+      for (int i = 0; i <= stepClose; i++) 
+      {
+        Serial.println("step close :" + String (i));
         digitalWrite(pul, HIGH);
         delayMicroseconds(speedStepper);
         digitalWrite(pul, LOW);
         delayMicroseconds(speedStepper);
+        delay(10);
       }
       Serial.println("closed");
       digitalWrite(ena, HIGH);  //nonakatifkan ENA
@@ -75,10 +81,12 @@ void openSwingOut() {
   digitalWrite(dir, LOW);              // mengatur direction untuk gate ke arah exit set up LOW
   for (int i = 0; i <= stepOpen; i++)  // perulangan stepper untuk membuka gate ke arah Exit
   {
+    Serial.println("step open :" + String (i));
     digitalWrite(pul, HIGH);
     delayMicroseconds(speedStepper);
     digitalWrite(pul, LOW);
     delayMicroseconds(speedStepper);
+    delay(10);
     // Serial.print(".");
   }
   Serial.println("opened");
@@ -87,15 +95,18 @@ void openSwingOut() {
   {
     // Serial.println("Waiting");
     delay(5); //delay untuk trigeer proses
-    if (digitalRead(sensor1) == LOW) {
+    if (digitalRead(sensor1) == LOW) 
+    {
       digitalWrite(ena, LOW);
       digitalWrite(dir, HIGH);
       for (int i = 0; i <= stepClose; i++)  // fungsi stepper untuk menutup turnstile
       {
+        Serial.println("step close :" + String (i));
         digitalWrite(pul, HIGH);
         delayMicroseconds(speedStepper);
         digitalWrite(pul, LOW);
         delayMicroseconds(speedStepper);
+        delay(10);
       }
       digitalWrite(ena, HIGH);
       Serial.println("closed");
@@ -133,25 +144,31 @@ void loop() {
     {
       Serial.println("in");
       flagIn = 1;
-      while (flagIn == 1) {
+      while (flagIn == 1) 
+      {
         if (Serial.available() > 0) {
           delay(10);
           dataIn = Serial.readString();
-          if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n") {
+          if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n") 
+          {
             // Serial.println("masuk");
             openSwingIn();  // proses open arah Enter
           }
         }
       }
-    } else if (digitalRead(sensor2) == LOW)  //deteksi user untuk arah keluar
+    } 
+    else if (digitalRead(sensor2) == LOW)  //deteksi user untuk arah keluar
     {
       Serial.println("exit");
+
       flagExit = 1;
       while (flagExit == 1) {
-        if (Serial.available() > 0) {
+        if (Serial.available() > 0) 
+        {
           delay(10);
           dataIn = Serial.readString();
-          if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n") {
+          if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n") 
+          {
             openSwingOut();  // proses open arah exit
           }
         }
