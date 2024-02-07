@@ -133,12 +133,14 @@ void setup() {
   pinMode(pul, OUTPUT);
   pinMode(sensor1, INPUT_PULLUP);
   pinMode(sensor2, INPUT_PULLUP);
+  pinMode(pinLed1, OUTPUT);
+  pinMode(pinLed2, OUTPUT);
   digitalWrite(ena, HIGH);
   delay(100);
 }
 
-void loop() {
-  
+void loop() 
+{
   digitalWrite(pinLed1,HIGH);
   digitalWrite(pinLed2,LOW);
   unsigned long currentMillis = millis();        //mendapatkan waktu saat ini
