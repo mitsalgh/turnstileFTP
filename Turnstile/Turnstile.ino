@@ -13,13 +13,13 @@ int flagIn = 0;
 String dataIn = "";
 int flagExit = 0;
 
-const int stepOpen = 300; //step untuk stepper motor untuk membuka gate 
-const int stepClose = 300; //step untuk Stepper motor untuk menutup kembali
+const int stepOpen = 1500; //step untuk stepper motor untuk membuka gate 
+const int stepClose = 1500; //step untuk Stepper motor untuk menutup kembali
 
 unsigned long lastDebounceTime = 0;  //variabel untuk debounce
 unsigned long debounceDelay = 50;    //waktu debounce dalam milidetik
 unsigned long prevMillis = 0;        //variabel untuk menyimpan waktu sebelumnya
-unsigned long interval = 350;        //interval waktu untuk debounce sensor
+unsigned long interval = 500;        //interval waktu untuk debounce sensor
 
 //============ Speed Setup NEMA ===============
 #define speedStepper 200  //step untuk buka dan tutup setting TB6600 di 400 step
@@ -45,17 +45,18 @@ void openSwingIn()  // fungsi untuk stepper untuk proses memnula gate
   digitalWrite(dir, HIGH);             // mengatur direction untuk open set di HIGH
   for (int i = 0; i <= stepOpen; i++)  //perulangan untuk per step buka (open proses)
   {
-    Serial.println("step open :" + String (i));
+    // Serial.println("step open :" + String (i));
     digitalWrite(pul, HIGH);
     delayMicroseconds(speedStepper);
     digitalWrite(pul, LOW);
     delayMicroseconds(speedStepper);
-    delay(10);
+    // delay(10);
   }
   Serial.println("opened");
   delay(5);
   while (digitalRead(sensor2) == HIGH)  // perulangan dan check untuk mode open orang masuk lalu menutup pintu
   {
+    Serial.println("waiting");
     delay(5);
     if (digitalRead(sensor2) == LOW) 
     {
@@ -63,16 +64,16 @@ void openSwingIn()  // fungsi untuk stepper untuk proses memnula gate
       digitalWrite(dir, LOW);
       for (int i = 0; i <= stepClose; i++) 
       {
-        Serial.println("step close :" + String (i));
+        // Serial.println("step close :" + String (i));
         digitalWrite(pul, HIGH);
         delayMicroseconds(speedStepper);
         digitalWrite(pul, LOW);
         delayMicroseconds(speedStepper);
-        delay(10);
+        // delay(10);
       }
       Serial.println("closed");
       digitalWrite(ena, HIGH);  //nonakatifkan ENA
-      delay(2000);
+      delay(400);
       resetAll();
       loop();
       break;
@@ -84,36 +85,36 @@ void openSwingOut() {
   digitalWrite(dir, LOW);              // mengatur direction untuk gate ke arah exit set up LOW
   for (int i = 0; i <= stepOpen; i++)  // perulangan stepper untuk membuka gate ke arah Exit
   {
-    Serial.println("step open :" + String (i));
+    // Serial.println("step open :" + String (i));
     digitalWrite(pul, HIGH);
     delayMicroseconds(speedStepper);
     digitalWrite(pul, LOW);
     delayMicroseconds(speedStepper);
-    delay(10);
+    // delay(10);
     // Serial.print(".");
   }
   Serial.println("opened");
   delay(5); //delay untuk holding
   while (digitalRead(sensor1) == HIGH)  // perulangan untuk deteksi user lewat arah exit dan menutup gate kembali
   {
-    // Serial.println("Waiting");
-    delay(5); //delay untuk trigeer proses
+    Serial.println("Waiting");
+    // delay(5); //delay untuk trigeer proses
     if (digitalRead(sensor1) == LOW) 
     {
       digitalWrite(ena, LOW);
       digitalWrite(dir, HIGH);
       for (int i = 0; i <= stepClose; i++)  // fungsi stepper untuk menutup turnstile
       {
-        Serial.println("step close :" + String (i));
+        // Serial.println("step close :" + String (i));
         digitalWrite(pul, HIGH);
         delayMicroseconds(speedStepper);
         digitalWrite(pul, LOW);
         delayMicroseconds(speedStepper);
-        delay(10);
+        // delay(10);
       }
       digitalWrite(ena, HIGH);
       Serial.println("closed");
-      delay(2000); // delay diganti jadi 10ms
+      delay(200); // delay diganti jadi 10ms
       resetAll();
       loop();
       break;
@@ -134,13 +135,13 @@ void setup() {
   pinMode(sensor1, INPUT_PULLUP);
   pinMode(sensor2, INPUT_PULLUP);
   pinMode(pinLed1, OUTPUT);
-  pinMode(pinLed2, OUTPUT);
+  pinMode(pinLed2,OUTPUT);
   digitalWrite(ena, HIGH);
   delay(100);
 }
 
-void loop() 
-{
+void loop() {
+  
   digitalWrite(pinLed1,HIGH);
   digitalWrite(pinLed2,LOW);
   unsigned long currentMillis = millis();        //mendapatkan waktu saat ini
