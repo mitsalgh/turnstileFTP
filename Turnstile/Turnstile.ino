@@ -13,8 +13,8 @@ int flagIn = 0;
 String dataIn = "";
 int flagExit = 0;
 
-const int stepOpen = 1500; //step untuk stepper motor untuk membuka gate 
-const int stepClose = 1500; //step untuk Stepper motor untuk menutup kembali
+const int stepOpen = 750; //step untuk stepper motor untuk membuka gate 
+const int stepClose = 750; //step untuk Stepper motor untuk menutup kembali
 
 unsigned long lastDebounceTime = 0;  //variabel untuk debounce
 unsigned long debounceDelay = 50;    //waktu debounce dalam milidetik
