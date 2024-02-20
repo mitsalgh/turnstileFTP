@@ -6,20 +6,28 @@
 #define sensor2 A1  // Sensor IR EXIT
 #define pinLed1 3
 #define pinLed2 4
+#define timeCount 10
 
 //============ data setup======================
 
 int flagIn = 0;
 String dataIn = "";
 int flagExit = 0;
+int count=10;
+int flagTimeout=timeCount;
 
 const int stepOpen = 750; //step untuk stepper motor untuk membuka gate 
 const int stepClose = 750; //step untuk Stepper motor untuk menutup kembali
+const int timeoutDelay=10;
 
 unsigned long lastDebounceTime = 0;  //variabel untuk debounce
 unsigned long debounceDelay = 50;    //waktu debounce dalam milidetik
 unsigned long prevMillis = 0;        //variabel untuk menyimpan waktu sebelumnya
 unsigned long interval = 500;        //interval waktu untuk debounce sensor
+
+unsigned long previousMillisTimeOut=0;
+unsigned long intervalTimeOut=1000;
+
 
 //============ Speed Setup NEMA ===============
 #define speedStepper 200  //step untuk buka dan tutup setting TB6600 di 400 step
@@ -56,9 +64,10 @@ void openSwingIn()  // fungsi untuk stepper untuk proses memnula gate
   delay(5);
   while (digitalRead(sensor2) == HIGH)  // perulangan dan check untuk mode open orang masuk lalu menutup pintu
   {
-    Serial.println("waiting");
-    delay(5);
-    if (digitalRead(sensor2) == LOW) 
+    checkTimeout();
+    Serial.println("waiting " + String (count));
+    delay(2);
+    if (digitalRead(sensor2) == LOW || flagTimeout==1) 
     {
       digitalWrite(ena, LOW);
       digitalWrite(dir, LOW);
@@ -97,9 +106,10 @@ void openSwingOut() {
   delay(5); //delay untuk holding
   while (digitalRead(sensor1) == HIGH)  // perulangan untuk deteksi user lewat arah exit dan menutup gate kembali
   {
-    Serial.println("Waiting");
-    // delay(5); //delay untuk trigeer proses
-    if (digitalRead(sensor1) == LOW) 
+    checkTimeout();
+    Serial.println("waiting " + String (count));
+    delay(2); //   Serial.println("Waiting");elay untuk trigeer proses
+    if (digitalRead(sensor1) == LOW || flagTimeout==1) 
     {
       digitalWrite(ena, LOW);
       digitalWrite(dir, HIGH);
@@ -125,6 +135,27 @@ void resetAll() {
   flagIn = 0;
   dataIn = "";
   flagExit = 0;
+  flagTimeout=0;
+  count=timeCount;
+}
+
+void checkTimeout()
+{
+  unsigned long currentMillis = millis();
+
+  if ((unsigned long)(currentMillis - previousMillisTimeOut) >= intervalTimeOut) 
+  {
+    count--;
+    if(count==0)
+    {
+      flagTimeout=1;
+    }
+    else
+    {
+      // Serial.print(count);
+    }
+    previousMillisTimeOut= millis();
+  }
 }
 
 void setup() {
@@ -139,6 +170,7 @@ void setup() {
   digitalWrite(ena, HIGH);
   delay(100);
 }
+
 
 void loop() {
   
