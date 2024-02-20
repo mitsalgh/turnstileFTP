@@ -4,16 +4,17 @@
 #define pul 9       // Pin pulse di TB6600
 #define sensor1 A0  // Sensor IR IN
 #define sensor2 A1  // Sensor IR EXIT
+#define sensorSteady A2 
 #define pinLed1 3
 #define pinLed2 4
-#define timeCount 10
+#define timeCount 5
 
 //============ data setup======================
 
 int flagIn = 0;
 String dataIn = "";
 int flagExit = 0;
-int count=10;
+int count=timeCount;
 int flagTimeout=timeCount;
 
 const int stepOpen = 750; //step untuk stepper motor untuk membuka gate 
