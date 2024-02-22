@@ -1,10 +1,15 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+
 //==================Pin Setup=================
 #define ena 7       // pin ENA
 #define dir 8       // pin Direction TB6600
 #define pul 9       // Pin pulse di TB6600
 #define sensor1 A0  // Sensor IR IN
 #define sensor2 A1  // Sensor IR EXIT
-#define sensorSteady A2 
+#define sensorSteady A2
 #define pinLed1 3
 #define pinLed2 4
 #define timeCount 9
@@ -14,20 +19,21 @@
 int flagIn = 0;
 String dataIn = "";
 int flagExit = 0;
-int count=timeCount;
-int flagTimeout=timeCount;
+int flagMenu = 0;
+int count = timeCount;
+int flagTimeout = timeCount;
 
-const int stepOpen = 750; //step untuk stepper motor untuk membuka gate 
+const int stepOpen = 750; //step untuk stepper motor untuk membuka gate
 const int stepClose = 750; //step untuk Stepper motor untuk menutup kembali
-const int timeoutDelay=10;
+const int timeoutDelay = 10;
 
 unsigned long lastDebounceTime = 0;  //variabel untuk debounce
 unsigned long debounceDelay = 50;    //waktu debounce dalam milidetik
 unsigned long prevMillis = 0;        //variabel untuk menyimpan waktu sebelumnya
 unsigned long interval = 500;        //interval waktu untuk debounce sensor
 
-unsigned long previousMillisTimeOut=0;
-unsigned long intervalTimeOut=1000;
+unsigned long previousMillisTimeOut = 0;
+unsigned long intervalTimeOut = 1000;
 
 
 //============ Speed Setup NEMA ===============
@@ -49,7 +55,7 @@ void steadyFlip()  // fungsi untuk steady kan flip untuk posisi closed
 
 void openSwingIn()  // fungsi untuk stepper untuk proses memnula gate
 {
-  
+
   digitalWrite(ena, LOW);              //Aktifator ENA
   digitalWrite(dir, HIGH);             // mengatur direction untuk open set di HIGH
   for (int i = 0; i <= stepOpen; i++)  //perulangan untuk per step buka (open proses)
@@ -68,11 +74,11 @@ void openSwingIn()  // fungsi untuk stepper untuk proses memnula gate
     checkTimeout();
     Serial.println("waiting " + String (count));
     delay(2);
-    if (digitalRead(sensor2) == LOW || flagTimeout==1) 
+    if (digitalRead(sensor2) == LOW || flagTimeout == 1)
     {
       digitalWrite(ena, LOW);
       digitalWrite(dir, LOW);
-      for (int i = 0; i <= stepClose; i++) 
+      for (int i = 0; i <= stepClose; i++)
       {
         // Serial.println("step close :" + String (i));
         digitalWrite(pul, HIGH);
@@ -110,7 +116,7 @@ void openSwingOut() {
     checkTimeout();
     Serial.println("waiting " + String (count));
     delay(2); //   Serial.println("Waiting");elay untuk trigeer proses
-    if (digitalRead(sensor1) == LOW || flagTimeout==1) 
+    if (digitalRead(sensor1) == LOW || flagTimeout == 1)
     {
       digitalWrite(ena, LOW);
       digitalWrite(dir, HIGH);
@@ -136,47 +142,145 @@ void resetAll() {
   flagIn = 0;
   dataIn = "";
   flagExit = 0;
-  flagTimeout=0;
-  count=timeCount;
+  flagTimeout = 0;
+  count = timeCount;
 }
 
 void checkTimeout()
 {
   unsigned long currentMillis = millis();
 
-  if ((unsigned long)(currentMillis - previousMillisTimeOut) >= intervalTimeOut) 
+  if ((unsigned long)(currentMillis - previousMillisTimeOut) >= intervalTimeOut)
   {
     count--;
-    if(count==0)
+    if (count == 0)
     {
-      flagTimeout=1;
+      flagTimeout = 1;
     }
     else
     {
       // Serial.print(count);
     }
-    previousMillisTimeOut= millis();
+    previousMillisTimeOut = millis();
   }
+}
+
+void menu()
+{
+  if (Serial.available() > 0)
+  {
+    delay(10);
+    dataIn = Serial.readString();
+    Serial.println(dataIn);
+    if(dataIn== "s\n")
+    {
+      lcd.clear();
+      flagMenu++;
+      Serial.println(flagMenu);
+      if(flagMenu>2)
+      {
+        flagMenu=0;
+      }
+    }
+    if(dataIn== "w\n")
+    {
+      lcd.clear();
+      flagMenu--;
+      Serial.println(flagMenu);
+      if(flagMenu<0)
+      {
+        flagMenu=2;
+      }
+    }
+    else if(dataIn == "d\n")
+    {
+      if(flagMenu==0){menuSetTimeout();delay(10000);}
+      else if(flagMenu==1){menuSetDelay();delay(10000);}
+      else if(flagMenu==2){menuSetArah();delay(10000);}
+    }
+  }
+
+  lcd.setCursor(3, 0);
+  lcd.print("Menu Setting");
+
+  if (flagMenu == 0)
+  {
+    
+    lcd.setCursor(0, 1);
+    lcd.print(">Set TimeOut<");
+    lcd.setCursor(0, 2);
+    lcd.print("Set Delay Open");
+    lcd.setCursor(0, 3);
+    lcd.print("Set Arah");
+  }
+  else if (flagMenu == 1)
+  {
+    
+    lcd.setCursor(0, 1);
+    lcd.print("Set TimeOut");
+    lcd.setCursor(0, 2);
+    lcd.print(">Set Delay Open<");
+    lcd.setCursor(0, 3);
+    lcd.print("Set Arah");
+  }
+  if (flagMenu == 2)
+  {
+    
+    lcd.setCursor(0, 1);
+    lcd.print("Set TimeOut");
+    lcd.setCursor(0, 2);
+    lcd.print("Set Delay Open");
+    lcd.setCursor(0, 3);
+    lcd.print(">Set Arah<");
+  }
+}
+
+void menuSetTimeout()
+{
+  lcd.clear();
+  lcd.setCursor(3,0);
+  lcd.print("Set Timeout");
+  
+}
+void menuSetDelay()
+{
+  lcd.clear();
+  lcd.setCursor(3,0);
+  lcd.print("Set Delay Open");
+}
+void menuSetArah()
+{
+  lcd.clear();
+  lcd.setCursor(3,0);
+  lcd.print("Set Arah");
 }
 
 void setup() {
   Serial.begin(9600);
+  lcd.init();                      // initialize the lcd
+  lcd.init();
+  // Print a message to the LCD.
+  lcd.backlight();
   pinMode(ena, OUTPUT);
   pinMode(dir, OUTPUT);
   pinMode(pul, OUTPUT);
   pinMode(sensor1, INPUT_PULLUP);
   pinMode(sensor2, INPUT_PULLUP);
   pinMode(pinLed1, OUTPUT);
-  pinMode(pinLed2,OUTPUT);
+  pinMode(pinLed2, OUTPUT);
   digitalWrite(ena, HIGH);
   delay(100);
 }
 
 
 void loop() {
-  
-  digitalWrite(pinLed1,HIGH);
-  digitalWrite(pinLed2,LOW);
+  while (1)
+  {
+    menu();
+  }
+
+  digitalWrite(pinLed1, HIGH);
+  digitalWrite(pinLed2, LOW);
   unsigned long currentMillis = millis();        //mendapatkan waktu saat ini
   if (currentMillis - prevMillis >= interval) {  //jika interval waktu sudah terlewati
     prevMillis = currentMillis;                  //memperbarui waktu sebelumnya
@@ -185,35 +289,35 @@ void loop() {
     {
       Serial.println("in");
       flagIn = 1;
-      while (flagIn == 1) 
+      while (flagIn == 1)
       {
         if (Serial.available() > 0) {
           delay(10);
           dataIn = Serial.readString();
-          if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n") 
+          if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n")
           {
-            digitalWrite(pinLed1,LOW);
-            digitalWrite(pinLed2,HIGH);
+            digitalWrite(pinLed1, LOW);
+            digitalWrite(pinLed2, HIGH);
             // Serial.println("masuk");
             openSwingIn();  // proses open arah Enter
           }
         }
       }
-    } 
+    }
     else if (digitalRead(sensor2) == LOW)  //deteksi user untuk arah keluar
     {
       Serial.println("exit");
 
       flagExit = 1;
       while (flagExit == 1) {
-        if (Serial.available() > 0) 
+        if (Serial.available() > 0)
         {
           delay(10);
           dataIn = Serial.readString();
-          if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n") 
+          if (dataIn == "o" || dataIn == "O" || dataIn == "o\n" || dataIn == "O\n")
           {
-            digitalWrite(pinLed1,LOW);
-            digitalWrite(pinLed2,HIGH);
+            digitalWrite(pinLed1, LOW);
+            digitalWrite(pinLed2, HIGH);
             openSwingOut();  // proses open arah exit
           }
         }
