@@ -7,7 +7,7 @@
 #define sensorSteady A2 
 #define pinLed1 3
 #define pinLed2 4
-#define timeCount 5
+#define timeCount 9
 
 //============ data setup======================
 
