@@ -1,9 +1,12 @@
+#include <EEPROM.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
-//==================Pin Setup=================
+//====================== Pin Setup =================
+#define EEPROMDelay 0
+#define EEPROMTimeout 1
 #define ena 7       // pin ENA
 #define dir 8       // pin Direction TB6600
 #define pul 9       // Pin pulse di TB6600
@@ -13,19 +16,30 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define pinLed1 3
 #define pinLed2 4
 #define timeCount 9
+#define pinLeft  6 
+#define pinUp 11
+#define pinRight 10
+#define pinDown 7
+#define pinOk 12
 
-//============ data setup======================
+//================== data setup ======================
 
 int flagIn = 0;
 String dataIn = "";
 int flagExit = 0;
-int flagMenu = 0;
-int count = timeCount;
-int flagTimeout = timeCount;
+int flagMasukMenu=0;
+
+int timeout = 0;
+int nilaiDelay =0;
+
+int count = timeout;
+int flagTimeout = timeout;
+
+
 
 const int stepOpen = 750; //step untuk stepper motor untuk membuka gate
 const int stepClose = 750; //step untuk Stepper motor untuk menutup kembali
-const int timeoutDelay = 10;
+
 
 unsigned long lastDebounceTime = 0;  //variabel untuk debounce
 unsigned long debounceDelay = 50;    //waktu debounce dalam milidetik
@@ -33,13 +47,14 @@ unsigned long prevMillis = 0;        //variabel untuk menyimpan waktu sebelumnya
 unsigned long interval = 500;        //interval waktu untuk debounce sensor
 
 unsigned long previousMillisTimeOut = 0;
-unsigned long intervalTimeOut = 1000;
+unsigned long intervalTimeOut = timeout*100;
+
 
 
 //============ Speed Setup NEMA ===============
 #define speedStepper 200  //step untuk buka dan tutup setting TB6600 di 400 step
 //=============================================
-
+void(* resetFunc) (void) = 0; 
 void steadyFlip()  // fungsi untuk steady kan flip untuk posisi closed
 {
   digitalWrite(ena, LOW);  // aktifator ENA
@@ -72,8 +87,8 @@ void openSwingIn()  // fungsi untuk stepper untuk proses memnula gate
   while (digitalRead(sensor2) == HIGH)  // perulangan dan check untuk mode open orang masuk lalu menutup pintu
   {
     checkTimeout();
-    Serial.println("waiting " + String (count));
-    delay(2);
+    // Serial.println("waiting " + String (count));
+    // delay(2);
     if (digitalRead(sensor2) == LOW || flagTimeout == 1)
     {
       digitalWrite(ena, LOW);
@@ -115,7 +130,7 @@ void openSwingOut() {
   {
     checkTimeout();
     Serial.println("waiting " + String (count));
-    delay(2); //   Serial.println("Waiting");elay untuk trigeer proses
+    // delay(2); //   Serial.println("Waiting");elay untuk trigeer proses
     if (digitalRead(sensor1) == LOW || flagTimeout == 1)
     {
       digitalWrite(ena, LOW);
@@ -138,12 +153,14 @@ void openSwingOut() {
     }
   }
 }
+
 void resetAll() {
   flagIn = 0;
   dataIn = "";
   flagExit = 0;
   flagTimeout = 0;
-  count = timeCount;
+  count = timeout;
+  flagMasukMenu=0;
 }
 
 void checkTimeout()
@@ -153,6 +170,7 @@ void checkTimeout()
   if ((unsigned long)(currentMillis - previousMillisTimeOut) >= intervalTimeOut)
   {
     count--;
+    Serial.println("Timeout : " + String(count));
     if (count == 0)
     {
       flagTimeout = 1;
@@ -165,98 +183,17 @@ void checkTimeout()
   }
 }
 
-void menu()
-{
-  if (Serial.available() > 0)
-  {
-    delay(10);
-    dataIn = Serial.readString();
-    Serial.println(dataIn);
-    if(dataIn== "s\n")
-    {
-      lcd.clear();
-      flagMenu++;
-      Serial.println(flagMenu);
-      if(flagMenu>2)
-      {
-        flagMenu=0;
-      }
-    }
-    if(dataIn== "w\n")
-    {
-      lcd.clear();
-      flagMenu--;
-      Serial.println(flagMenu);
-      if(flagMenu<0)
-      {
-        flagMenu=2;
-      }
-    }
-    else if(dataIn == "d\n")
-    {
-      if(flagMenu==0){menuSetTimeout();delay(10000);}
-      else if(flagMenu==1){menuSetDelay();delay(10000);}
-      else if(flagMenu==2){menuSetArah();delay(10000);}
-    }
-  }
 
-  lcd.setCursor(3, 0);
-  lcd.print("Menu Setting");
-
-  if (flagMenu == 0)
-  {
-    
-    lcd.setCursor(0, 1);
-    lcd.print(">Set TimeOut<");
-    lcd.setCursor(0, 2);
-    lcd.print("Set Delay Open");
-    lcd.setCursor(0, 3);
-    lcd.print("Set Arah");
-  }
-  else if (flagMenu == 1)
-  {
-    
-    lcd.setCursor(0, 1);
-    lcd.print("Set TimeOut");
-    lcd.setCursor(0, 2);
-    lcd.print(">Set Delay Open<");
-    lcd.setCursor(0, 3);
-    lcd.print("Set Arah");
-  }
-  if (flagMenu == 2)
-  {
-    
-    lcd.setCursor(0, 1);
-    lcd.print("Set TimeOut");
-    lcd.setCursor(0, 2);
-    lcd.print("Set Delay Open");
-    lcd.setCursor(0, 3);
-    lcd.print(">Set Arah<");
-  }
-}
-
-void menuSetTimeout()
+void setup() 
 {
-  lcd.clear();
-  lcd.setCursor(3,0);
-  lcd.print("Set Timeout");
-  
-}
-void menuSetDelay()
-{
-  lcd.clear();
-  lcd.setCursor(3,0);
-  lcd.print("Set Delay Open");
-}
-void menuSetArah()
-{
-  lcd.clear();
-  lcd.setCursor(3,0);
-  lcd.print("Set Arah");
-}
-
-void setup() {
   Serial.begin(9600);
+  bacaEEPROM(EEPROMDelay,EEPROMTimeout);
+  Serial.println("Timeout : " + String(timeout)+ "Delay(ms) : "+ String (nilaiDelay));
+  pinMode(pinUp, INPUT_PULLUP);
+  pinMode(pinDown, INPUT_PULLUP);
+  pinMode(pinRight, INPUT_PULLUP);
+  pinMode(pinLeft, INPUT_PULLUP);
+  pinMode(pinOk, INPUT_PULLUP);
   lcd.init();                      // initialize the lcd
   lcd.init();
   // Print a message to the LCD.
@@ -269,15 +206,42 @@ void setup() {
   pinMode(pinLed1, OUTPUT);
   pinMode(pinLed2, OUTPUT);
   digitalWrite(ena, HIGH);
+  lcd.setCursor(0, 1);
+  lcd.print("System Ready");
   delay(100);
+  // simpanEEPROM (150,100,EEPROMDelay,EEPROMTimeout);
+  bacaEEPROM(EEPROMDelay,EEPROMTimeout);
+  Serial.println("Delay : "+ String(nilaiDelay) + " Timeout : " + String(timeout));
+  delay(10);
+  intervalTimeOut = timeout*100;
+  count = timeout;
+  flagTimeout = timeout;
+
+  Serial.println(intervalTimeOut);
 }
 
-
 void loop() {
-  while (1)
-  {
-    menu();
-  }
+  // while (1)
+  // {
+  //   digitalWrite(ena, HIGH);              //Aktifator ENA
+  //   digitalWrite(dir, LOW);             // mengatur direction untuk open set di HIGH
+  //  for (int i = 0; i <= stepOpen; i++)  //perulangan untuk per step buka (open proses)
+  //  {
+  //   // Serial.println("step open :" + String (i));
+  //   digitalWrite(pul, HIGH);
+  //   delayMicroseconds(speedStepper);
+  //   digitalWrite(pul, LOW);
+  //   delayMicroseconds(speedStepper);
+  //   // delay(10);
+  // }
+    //  bacaEEPROM(EEPROMDelay,EEPROMDelay);
+    //  Serial.print(nilaiDelay);
+    //  Serial.print(" / ");
+    //  Serial.print(timeout);
+    //  Serial.println();
+    //  menu();
+  //   Serial.println(digitalRead(pinLeft));
+  // }
 
   digitalWrite(pinLed1, HIGH);
   digitalWrite(pinLed2, LOW);
@@ -321,6 +285,15 @@ void loop() {
             openSwingOut();  // proses open arah exit
           }
         }
+      }
+    }
+    else if(digitalRead(pinOk)==LOW && digitalRead(pinLeft)==LOW)
+    {
+      // flagMasukMenu=1;
+      Serial.print("masuk");
+      while(1)
+      {
+        menu();
       }
     }
   }
