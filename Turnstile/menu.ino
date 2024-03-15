@@ -43,7 +43,7 @@ void menu() {
         // delay(10000);
       } else if (flagMenu == 2) {
         menuSetArah();
-        delay(10000);
+        // delay(10000);
       }
     }
   }
@@ -178,8 +178,55 @@ void menuSetDelay() {
     }
   }
 }
-void menuSetArah() {
+void menuSetArah() 
+{
   lcd.clear();
-  lcd.setCursor(3, 0);
-  lcd.print("Set Arah");
+   while (flagMenu == 2) {
+    lcd.setCursor(3, 0);
+    lcd.print("Set Arah");
+    lcd.setCursor(2, 1);
+    lcd.print("Masukan Arah");
+    unsigned long currentMillis = millis();  //mendapatkan waktu saat ini
+    if (currentMillis - prevMillis >= intervalButton) {
+      prevMillis = currentMillis;
+      if (digitalRead(pinRight) == LOW) {
+        nilaiAngka++;
+        lcd.setCursor(7, 2);
+        lcd.print(nilaiAngka);
+        if (nilaiAngka > 3) {
+          nilaiAngka = 0;
+          lcd.setCursor(8, 2);
+          lcd.print(" ");
+          lcd.setCursor(7, 2);
+         lcd.print(nilaiAngka);
+          // lcd.print(nilaiAngka);
+        }
+      } 
+      else if (digitalRead(pinLeft) == LOW) {
+        nilaiAngka--;
+        if (nilaiAngka == 9) {
+          lcd.setCursor(8, 2);
+          lcd.print(" ");
+        } else if (nilaiAngka < 0) {
+          nilaiAngka = 3;
+        }
+        lcd.setCursor(7, 2);
+        lcd.print(nilaiAngka);
+      } 
+      else if (digitalRead(pinOk) == LOW) {
+        simpanArah(nilaiAngka,EEPROMArah);
+        resetNilai();
+        resetAll();
+        // flagMenu=0;
+        // Serial.print(flagMenu);
+        
+        lcd.clear();
+        // delay(1000);
+        // setup();
+         resetFunc();
+        // menu();
+        break;
+      }
+    }
+  }
 }
