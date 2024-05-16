@@ -9,8 +9,8 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 #define EEPROMTimeout 1
 #define EEPROMArah 3
 #define ena 7       // pin ENA
-#define dir 8       // pin Direction TB6600
-#define pul 9       // Pin pulse di TB6600
+#define dir 2       // pin Direction TB6600
+#define pul 5       // Pin pulse di TB6600
 #define sensor1 A0  // Sensor IR IN
 #define sensor2 A1  // Sensor IR EXIT
 #define sensorSteady A2
