@@ -1,7 +1,7 @@
 int flagMenu = 0;
 int nilaiAngka = 0;
 // int flagInmenu=0;
-unsigned long intervalButton = 250;
+unsigned long intervalButton = 250; //nilai
 
 void resetNilai() {
   flagMenu = 0;
@@ -9,12 +9,6 @@ void resetNilai() {
 }
 
 void menu() {
-  // Serial.println("open");
-  // if (Serial.available() > 0)
-  // {
-  // delay(10);
-  // dataIn = Serial.readString();
-  // Serial.println(digitalRead(pinDown));
   unsigned long currentMillis = millis();              //mendapatkan waktu saat ini
   if (currentMillis - prevMillis >= intervalButton) {  //jika interval waktu sudah terlewati
     prevMillis = currentMillis;
@@ -33,17 +27,21 @@ void menu() {
       if (flagMenu < 0) {
         flagMenu = 2;
       }
-    } else if (digitalRead(pinOk) == LOW) {
+    }
+    else if (digitalRead(pinOk) == LOW && digitalRead (pinLeft) == LOW)
+    {
+      resetNilai();
+      resetAll();
+      lcd.clear();
+      resetFunc();
+    }
+    else if (digitalRead(pinOk) == LOW) {
       if (flagMenu == 0) {
-        // Serial.println("masuk Sini");
         menuSetTimeout();
-        // delay(10000);
       } else if (flagMenu == 1) {
         menuSetDelay();
-        // delay(10000);
       } else if (flagMenu == 2) {
         menuSetArah();
-        // delay(10000);
       }
     }
   }
@@ -93,7 +91,6 @@ void menuSetTimeout() {
           lcd.print(" ");
           lcd.setCursor(7, 2);
           lcd.print(nilaiAngka);
-          //  lcd.print(nilaiAngka);
         }
       } else if (digitalRead(pinLeft) == LOW) {
         nilaiAngka--;
@@ -106,19 +103,20 @@ void menuSetTimeout() {
         lcd.setCursor(7, 2);
         lcd.print(nilaiAngka);
       }
-
       else if (digitalRead(pinOk) == LOW) {
         simpanEEPROM(nilaiDelay, nilaiAngka, EEPROMDelay, EEPROMTimeout);
         delay(10);
         resetNilai();
         resetAll();
-        // flagMenu=0;
-        // Serial.print(flagMenu);
         lcd.clear();
-
-        // delay(1000);
-        // menu();
-        // setup();
+        resetFunc();
+        break;
+      }
+      else if (digitalRead(pinOk) == LOW && digitalRead (pinLeft) == LOW)
+      {
+        resetNilai();
+        resetAll();
+        lcd.clear();
         resetFunc();
         break;
       }
@@ -145,7 +143,6 @@ void menuSetDelay() {
           lcd.print(" ");
           lcd.setCursor(7, 2);
           lcd.print(nilaiAngka);
-          // lcd.print(nilaiAngka);
         }
       } else if (digitalRead(pinLeft) == LOW) {
         nilaiAngka--;
@@ -161,14 +158,16 @@ void menuSetDelay() {
         simpanEEPROM(nilaiAngka, timeout, EEPROMDelay, EEPROMTimeout);
         resetNilai();
         resetAll();
-        // flagMenu=0;
-        // Serial.print(flagMenu);
-
         lcd.clear();
-        // delay(1000);
-        // setup();
         resetFunc();
-        // menu();
+        break;
+      }
+      else if (digitalRead(pinOk) == LOW && digitalRead (pinLeft) == LOW)
+      {
+        resetNilai();
+        resetAll();
+        lcd.clear();
+        resetFunc();
         break;
       }
     }
@@ -196,7 +195,6 @@ void menuSetArah() {
           lcd.print(" ");
           lcd.setCursor(7, 2);
           lcd.print(nilaiAngka);
-          // lcd.print(nilaiAngka);
         }
       } else if (digitalRead(pinLeft) == LOW) {
         nilaiAngka--;
@@ -212,13 +210,16 @@ void menuSetArah() {
         simpanArah(nilaiAngka, EEPROMArah);
         resetNilai();
         resetAll();
-        // flagMenu=0;
-        // Serial.print(flagMenu);
         lcd.clear();
-        // delay(1000);
-        // setup();
         resetFunc();
-        // menu();
+        break;
+      }
+      else if (digitalRead(pinOk) == LOW && digitalRead (pinLeft) == LOW)
+      {
+        resetNilai();
+        resetAll();
+        lcd.clear();
+        resetFunc();
         break;
       }
     }
